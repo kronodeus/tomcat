@@ -65,7 +65,7 @@
 					<finalName>tomcat-${project.version}</finalName>
 					<archive>
 						<manifest>
-							<mainClass>com.vc.App</mainClass>
+							<mainClass>com.vc.bootstrap.Main</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
