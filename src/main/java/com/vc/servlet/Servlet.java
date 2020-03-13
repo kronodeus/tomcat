@@ -19,7 +19,7 @@ public abstract class Servlet extends HttpServlet {
 		}
 	}
 
-	protected abstract void get(HttpServletRequest request, HttpServletResponse response) throws IOException;
+	protected abstract void get(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 
 	@Override
 	public String getServletName() {
