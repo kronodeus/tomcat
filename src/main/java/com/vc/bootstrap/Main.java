@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 
+import com.vc.log.Log;
+
 public class Main {
 	private static final String HOST_NAME = Optional.ofNullable(getSystemHost()).orElse("localhost");
 	private static final int PORT = Optional.ofNullable(getSystemPort()).orElse(8080);
@@ -18,10 +20,12 @@ public class Main {
 		tomcat.setPort(PORT);
 		tomcat.getHost().setAppBase(APP_BASE);
 		tomcat.setConnector(tomcat.getConnector());
-		ServletLoader.load(tomcat.addWebapp(CONTEXT_PATH, APP_BASE));
+		tomcat.setAddDefaultWebXmlToWebapp(false);
+		ServletRegistry.load(tomcat.addWebapp(CONTEXT_PATH, APP_BASE));
+		ServletRegistry.reload();
 
 		try {
-			System.out.printf("Starting Tomcat server (%s:%s)\n", HOST_NAME, PORT);
+			Log.info("Starting Tomcat server (%s:%s)", HOST_NAME, PORT);
 			tomcat.start();
 			tomcat.getServer().await();
 		} catch (LifecycleException e) {
@@ -39,7 +43,7 @@ public class Main {
 		try {
 			return System.getenv("HOSTNAME");
 		} catch (Exception e) {
-			System.err.printf("Error occurred while getting system hostname: %s\n", e.toString());
+			Log.error("Error occurred while getting system hostname: %s", e.toString());
 			return null;
 		}
 	}
@@ -49,7 +53,7 @@ public class Main {
 			String port = System.getenv("PORT");
 			return port != null ? Integer.valueOf(port) : null;
 		} catch (Exception e) {
-			System.err.printf("Error occurred while getting system port: %s\n", e.toString());
+			Log.error("Error occurred while getting system port: %s", e.toString());
 			return null;
 		}
 	}

@@ -1,12 +1,37 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>React Hello World</title>
-    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link rel="icon" href="https://getbootstrap.com/docs/4.0/assets/img/favicons/favicon.ico">
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sign-in/">
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/login.css" rel="stylesheet">
+
+    <title>Log In</title>
 </head>
-<body>
-<div id="info">Loading...</div>
-<div id="link"></div>
-<script type="module" src="../js/home.js"></script>
+
+<body class="text-center" data-gr-c-s-loaded="true">
+<form class="form-signin" data-children-count="3">
+    <img class="mb-4" src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" alt="" width="72"
+         height="72">
+    <h1 class="h3 mb-3 font-weight-normal">Log In</h1>
+    <label for="inputUsername" class="sr-only">Username</label>
+    <input type="text" id="inputUsername" class="form-control" placeholder="Username" required="" autofocus=""
+           data-kwimpalastatus="alive" data-kwimpalaid="1584111160980-4">
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" id="inputPassword" class="form-control" placeholder="Password" required=""
+           data-kwimpalastatus="alive" data-kwimpalaid="1584111160980-3">
+    <div class="checkbox mb-3">
+        <label data-children-count="1">
+            <input type="checkbox" value="remember-me"> Remember me
+        </label>
+    </div>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Log In</button>
+    <p class="mt-5 mb-3 text-muted">© 2020</p>
+</form>
 </body>
 </html>

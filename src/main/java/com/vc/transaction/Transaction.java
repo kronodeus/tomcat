@@ -2,44 +2,45 @@ package com.vc.transaction;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+
+import com.vc.log.Log;
+import com.vc.session.Session;
 
 public abstract class Transaction {
 	public enum Type {
-		SERVLET(ServletTransaction::new);
+		SERVLET_GET(ServletGetTransaction::new),
+		SERVLET_POST(ServletPostTransaction::new),
+		DEFAULT(DefaultTransaction::new),
+		LOGIN(LoginTransaction::new);
 
-		private final Function<Thread, Transaction> transactionCreator;
+		private final TransactionConstructor constructor;
 
-		Type(Function<Thread, Transaction> transactionCreator) {
-			this.transactionCreator = transactionCreator;
+		Type(TransactionConstructor constructor) {
+			this.constructor = constructor;
 		}
 
-		public Transaction create(Thread thread) {
-			return transactionCreator.apply(thread);
+		public Transaction create(Session session, Thread thread, String url) {
+			return constructor.construct(session, thread, this, url);
 		}
 	}
 
 	private static final Map<Thread, Transaction> TRANSACTIONS = new HashMap<>();
 
+	private final Session session;
 	private final Thread thread;
 	private final Type type;
+	private final String url;
 
-	protected Transaction(Thread thread, Type type) {
+	protected Transaction(Session session, Thread thread, Type type, String url) {
+		this.session = session;
 		this.thread = thread;
 		this.type = type;
+		this.url = url;
 	}
 
 	protected abstract void onBegin();
 
 	protected abstract void onEnd();
-
-	protected final Thread getThread() {
-		return thread;
-	}
-
-	protected final Type getType() {
-		return type;
-	}
 
 	@Override
 	public int hashCode() {
@@ -48,12 +49,19 @@ public abstract class Transaction {
 
 	@Override
 	public String toString() {
-		return String.format("%s (Type: %s, Thread: %s)", getClass().getName(), type, thread.getName());
+		return String.format(
+				"%s (Type: %s, Thread: %s, URL: %s, Session: %s)",
+				getClass().getName(),
+				type,
+				thread.getName(),
+				url,
+				session
+		);
 	}
 
-	public static void run(Type type, TransactionRunnable runnable) throws Exception {
+	public static void run(Session session, Type type, String url, TransactionRunnable runnable) throws Exception {
 		try {
-			begin(type);
+			begin(session, type, url);
 			runnable.run();
 		} finally {
 			end();
@@ -64,15 +72,17 @@ public abstract class Transaction {
 		return TRANSACTIONS.get(Thread.currentThread());
 	}
 
-	private static synchronized void begin(Type type) throws TransactionException {
+	private static synchronized void begin(Session session, Type type, String url) throws TransactionException {
 		Thread thread = Thread.currentThread();
 
 		if (TRANSACTIONS.containsKey(thread))
-			throw new TransactionException(String.format("Attempted to start new transaction before previous had finished on thread: %s", thread));
+			throw new TransactionException("Attempted to start new transaction before previous had finished");
 
-		Transaction transaction = type.create(thread);
+		Transaction transaction = type.create(session, thread, url);
 		TRANSACTIONS.put(thread, transaction);
 		transaction.onBegin();
+
+		Log.info("%s transaction started [%s]", transaction.type, transaction.url);
 	}
 
 	private static synchronized void end() throws TransactionException {
@@ -80,9 +90,11 @@ public abstract class Transaction {
 		Transaction transaction = TRANSACTIONS.get(thread);
 
 		if (transaction == null)
-			throw new TransactionException(String.format("Attempted to end a transaction, but it was not found on thread: %s", thread));
+			throw new TransactionException("Attempted to end a non-existent transaction");
 
 		transaction.onEnd();
 		TRANSACTIONS.remove(thread);
+
+		Log.info("%s transaction ended [%s]", transaction.type, transaction.url);
 	}
 }
